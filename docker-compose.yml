@@ -3,16 +3,9 @@ services:
     build: .
     ports:
       - "3001:3000"
+    env_file:
+      - .env
     environment:
       - NODE_ENV=production
-      - PORT=3000
-      # REQUIRED: Set your OpenAPI spec URL
-      - API_SPEC_URL=${API_SPEC_URL}
-      # OPTIONAL: Set base URL if different from spec or to override
-      - API_BASE_URL=${API_BASE_URL:-}
-      # OPTIONAL: Customize server name
-      - MCP_SERVER_NAME=${MCP_SERVER_NAME:-openapi-mcp-server}
-      # OPTIONAL: API request timeout (ms)
-      - API_TIMEOUT=${API_TIMEOUT:-30000}
     restart: unless-stopped
     container_name: openapi-mcp-server

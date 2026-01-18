@@ -22,8 +22,13 @@ export class OpenApiService {
 	private spec: OpenAPIDocument | null = null;
 	private apiClient: AxiosInstance;
 	private lastFetch: Date | null = null;
+	private specUrl: string;
+	private baseUrl: string;
 
-	constructor() {
+	constructor(specUrl: string, baseUrl?: string) {
+		this.specUrl = specUrl;
+		this.baseUrl = baseUrl || '';
+
 		this.apiClient = axios.create({
 			timeout: OPENAPI_CONFIG.timeout,
 			headers: {
@@ -35,13 +40,13 @@ export class OpenApiService {
 
 	//-- Fetch the OpenAPI spec from the configured URL
 	async fetchSpec(): Promise<OpenAPIDocument> {
-		if (!OPENAPI_CONFIG.specUrl) {
-			throw new Error('API_SPEC_URL environment variable is not configured');
+		if (!this.specUrl) {
+			throw new Error('API_SPEC_URL is not configured for this environment');
 		}
 
 		try {
-			console.log(`Fetching OpenAPI spec from: ${OPENAPI_CONFIG.specUrl}`);
-			const response = await axios.get<OpenAPIDocument>(OPENAPI_CONFIG.specUrl, {
+			console.log(`Fetching OpenAPI spec from: ${this.specUrl}`);
+			const response = await axios.get<OpenAPIDocument>(this.specUrl, {
 				timeout: OPENAPI_CONFIG.timeout,
 				httpsAgent: new https.Agent()
 			});
@@ -76,8 +81,8 @@ export class OpenApiService {
 
 	//-- Get the base URL for API calls
 	getBaseUrl(): string {
-		if (OPENAPI_CONFIG.baseUrl) {
-			return OPENAPI_CONFIG.baseUrl;
+		if (this.baseUrl) {
+			return this.baseUrl;
 		}
 
 		//-- Try to extract from spec

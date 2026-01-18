@@ -3,7 +3,7 @@ import { Request, Response, Express } from 'express';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { createMcpExpressApp } from '@modelcontextprotocol/sdk/server/express.js';
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
-import { createWeatherServer } from './mcpServer.js';
+import { createApiServer } from './mcpServer.js';
 
 /**
  * Session storage for managing multiple client connections
@@ -76,7 +76,7 @@ export function createMcpHttpApp(): Express {
 				};
 
 				// Connect the transport to a new server instance
-				const server = createWeatherServer();
+				const server = await createApiServer();
 				await server.connect(transport);
 				await transport.handleRequest(req, res, req.body);
 				return;

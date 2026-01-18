@@ -306,3 +306,7 @@ docker-compose down && docker-compose up -d
 ```bash
 MCP_VERBOSE=true
 ```
+
+## Feature enhancements
+
+- Whitelists and blacklists: Only allow specific endpoints to be called, or explicitly prevent specific endpoints to be called.

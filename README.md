@@ -1,6 +1,13 @@
 # OpenAPI MCP Server
 
-A Model Context Protocol (MCP) server that dynamically exposes API endpoints from any OpenAPI specification as tools for Claude. This allows Claude to interact with your .NET Core API (or any OpenAPI-compliant API) by automatically generating tool definitions from your swagger/OpenAPI spec.
+A Model Context Protocol (MCP) server that dynamically exposes API endpoints from any OpenAPI specification as tools for MCP clients. This allows MCP clients to interact with your .NET Core API (or any OpenAPI-compliant API) by automatically generating tool definitions from your swagger/OpenAPI spec.
+
+MCP clients will automatically:
+
+- Understand which tools to use based on descriptions
+- Provide required parameters
+- Handle responses and errors
+- Format results for you
 
 ## Features
 
@@ -12,65 +19,6 @@ A Model Context Protocol (MCP) server that dynamically exposes API endpoints fro
 - **Environment Configuration**: Flexible configuration via environment variables
 - **Error Handling**: Comprehensive error handling and logging
 
-## Quick Start
-
-### 1. Configure Environment Variables
-
-Create a `.env` file in the project root:
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` and set your API details:
-
-```env
-# Required: URL to your OpenAPI spec
-API_SPEC_URL=http://localhost:5000/swagger/v1/swagger.json
-
-# Optional: Base URL for API calls (if different from spec)
-API_BASE_URL=http://localhost:5000
-
-# Optional: Custom server name
-MCP_SERVER_NAME=my-api-mcp-server
-```
-
-### 2. Build and Run with Docker
-
-```bash
-# Build the project
-npm run build
-
-# Start the MCP server
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-```
-
-The server will be available at `http://localhost:3001/mcp`
-
-### 3. Connect to Claude Code
-
-Add to your Claude Code settings (`mcp_settings.json`):
-
-```json
-{
-  "mcpServers": {
-    "my-api": {
-      "url": "http://localhost:3001/mcp"
-    }
-  }
-}
-```
-
-**Settings location**:
-- Windows: `%APPDATA%\Claude\mcp_settings.json`
-- macOS: `~/Library/Application Support/Claude/mcp_settings.json`
-- Linux: `~/.config/claude/mcp_settings.json`
-
-Restart Claude Code to connect.
-
 ## How It Works
 
 1. **Startup**: The MCP server fetches your OpenAPI specification from the configured URL
@@ -78,184 +26,267 @@ Restart Claude Code to connect.
    - Tool name derived from the operationId (or auto-generated)
    - Description from the operation summary
    - Input schema converted from OpenAPI parameters and request body
-3. **Execution**: When Claude calls a tool, the server:
+3. **MCP clients can call these tools**: When a tool is called, the server:
    - Validates the input parameters
    - Constructs and executes the HTTP request to your API
-   - Returns the response to Claude
+   - Returns the response
+4. **Responses are formatted** and returned for analysis
 
-## Configuration
+## Prerequisites
+
+- Docker Desktop installed and running
+- Your MCP Client of choice installed
+
+## Configuration Before Running
 
 All configuration is done via environment variables:
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `API_SPEC_URL` | Yes | - | URL to OpenAPI specification (e.g., `/swagger/v1/swagger.json`) |
-| `API_BASE_URL` | No | From spec | Base URL for API calls (overrides spec servers) |
-| `MCP_SERVER_NAME` | No | `openapi-mcp-server` | Name of the MCP server |
-| `PORT` | No | `3000` | Port for the MCP server |
-| `API_TIMEOUT` | No | `30000` | API request timeout in milliseconds |
-| `SPEC_REFRESH_INTERVAL` | No | `0` | How often to refresh spec (0 = never) |
+| Variable                | Required | Default              | Description                                                     |
+| ----------------------- | -------- | -------------------- | --------------------------------------------------------------- |
+| `API_SPEC_URL`          | Yes      | -                    | URL to OpenAPI specification (e.g., `/swagger/v1/swagger.json`) |
+| `API_BASE_URL`          | No       | From spec            | Base URL for API calls (overrides spec servers)                 |
+| `MCP_SERVER_NAME`       | No       | `openapi-mcp-server` | Name of the MCP server                                          |
+| `PORT`                  | No       | `3000`               | Port for the MCP server                                         |
+| `API_TIMEOUT`           | No       | `30000`              | API request timeout in milliseconds                             |
+| `SPEC_REFRESH_INTERVAL` | No       | `0`                  | How often to refresh spec (0 = never)                           |
 
-## Development
+## Building and Running with Docker
 
-### Local Development (without Docker)
+### Option 1: Using Docker Compose (Recommended)
+
+1. Build and start the container:
 
 ```bash
-# Install dependencies
-npm install
-
-# Build the project
-npm run build
-
-# Set environment variables
-export API_SPEC_URL=http://localhost:5000/swagger/v1/swagger.json
-
-# Run the server
-npm start
-
-# Or run in development mode with auto-reload
-npm run dev
+docker-compose up -d
 ```
 
-### Project Structure
+2. View logs:
 
-```
-.
-├── src/
-│   ├── config.ts                  # Configuration and environment variables
-│   ├── index.ts                   # Entry point
-│   ├── server/
-│   │   ├── mcpServer.ts          # MCP server setup and tool registration
-│   │   └── httpTransport.ts      # HTTP transport and session management
-│   └── services/
-│       ├── openApiService.ts     # OpenAPI spec fetching and API calls
-│       └── toolGenerator.ts      # Dynamic tool generation from OpenAPI
-├── docker-compose.yml            # Docker Compose configuration
-├── Dockerfile                    # Docker image definition
-└── .env.example                  # Environment variable template
+```bash
+docker-compose logs -f
 ```
 
-## Using with Your .NET Core API
+3. Stop the container:
 
-1. **Ensure your API exposes an OpenAPI spec**:
-   - Most .NET Core APIs with Swashbuckle have this at `/swagger/v1/swagger.json`
-   - Or at `/swagger/v1/swagger.yaml`
+```bash
+docker-compose down
+```
 
-2. **Set the API_SPEC_URL**:
+4. Restart the container:
+
+```bash
+docker-compose restart
+```
+
+### Option 2: Using Docker CLI
+
+1. Build the Docker image:
+
+```bash
+docker build -t openapi-mcp-server .
+```
+
+2. Run the container with environment variables:
+
+```bash
+docker run -d \
+  -p 3001:3000 \
+  -e API_SPEC_URL=https://localhost:7086/openapi/v1.json \
+  -e API_BASE_URL=https://localhost:7086 \
+  --name openapi-mcp-server \
+  openapi-mcp-server
+```
+
+3. View logs:
+
+```bash
+docker logs -f openapi-mcp-server
+```
+
+4. Stop the container:
+
+```bash
+docker stop openapi-mcp-server
+docker rm openapi-mcp-server
+```
+
+## Verifying the Server
+
+The MCP server should be accessible at:
+
+- **Endpoint**: http://localhost:3001/mcp (Docker Compose default)
+- **Internal**: http://localhost:3000/mcp (container port)
+
+Test if it's running:
+
+```bash
+curl http://localhost:3001/mcp
+```
+
+You should see output indicating the server is running. Check logs to verify your API spec was loaded:
+
+```bash
+docker-compose logs -f | grep "Loaded API"
+docker-compose logs -f | grep "Registering tool"
+```
+
+Run the view logs command and look for these messages in the logs:
+
+```
+Loaded API: YourApiName (v1.0.0)
+Found X API operations
+Registering tool: operationName (GET /path)
+MCP Server listening on http://localhost:3000
+```
+
+## Stopping the Server
+
+When you're done:
+
+```bash
+docker-compose down
+```
+
+This stops and removes the container. Your Docker image will remain, so you can quickly start it again with `docker-compose up -d`.
+
+## Connecting Claude Code
+
+Claude Code supports HTTP MCP servers. Here's how to connect:
+
+#### Method 1: Using Claude Code Settings File
+
+1. **Claude Code typically discovers HTTP MCP servers automatically** if they follow the standard. However, if you need to manually configure:
+
+2. **Check your Claude Code settings location** by running:
+
    ```bash
-   API_SPEC_URL=http://your-api:5000/swagger/v1/swagger.json
+   claude config show
    ```
 
-3. **If your API requires authentication**:
-   - Currently, the server doesn't support authentication
-   - This can be extended by modifying `src/services/openApiService.ts`
-   - Add headers in the `apiClient` configuration
+   This will show you where your configuration files are stored.
 
-4. **Docker networking**:
-   - If your .NET API is also in Docker, use Docker network names
-   - Example: `API_SPEC_URL=http://my-dotnet-api:80/swagger/v1/swagger.json`
+3. **To configure by command line**, run `claude mcp add --transport http my-api --scope user http://localhost:3001/mcp⁠`
 
-## Example Usage with Claude
+4. **If manual configuration is needed**, create or edit the MCP settings file in your Claude Code configuration directory with:
 
-Once connected, Claude can interact with your API:
+   ```json
+   {
+   	"mcpServers": {
+   		"my-api": {
+   			"url": "http://localhost:3001/mcp",
+   			"transport": "http"
+   		}
+   	}
+   }
+   ```
 
-```
-User: "What endpoints are available in my API?"
-Claude: *Calls the server info resource to list all tools*
+5. **Restart Claude Code** to pick up the new configuration.
 
-User: "Get all users"
-Claude: *Calls the get_users tool (if it exists in your API)*
+> **Note**: The exact configuration method may vary depending on your Claude Code version. Check the official Claude Code documentation for the most up-to-date instructions.
 
-User: "Create a new user with name 'John Doe' and email 'john@example.com'"
-Claude: *Calls the create_user tool with appropriate parameters*
-```
+#### Method 2: Using Claude Desktop
 
-Claude will automatically:
-- Understand which tools to use based on descriptions
-- Provide required parameters
-- Handle responses and errors
-- Format results for you
+If using Claude Desktop instead of Claude Code CLI:
+
+1. **Locate your configuration file**:
+   - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+   - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+2. **Add the HTTP MCP server**:
+
+   ```json
+   {
+   	"mcpServers": {
+   		"my-api": {
+   			"url": "http://localhost:3001/mcp",
+   			"transport": "http"
+   		}
+   	}
+   }
+   ```
+
+3. **Restart Claude Desktop**.
+
+### Testing the Connection
+
+Once connected, Claude will have access to tools generated from your OpenAPI specification.
+
+Ask Claude:
+
+- "What tools are available from my API?"
+- "Show me the server information resource"
+
+### Using the Tools
+
+The available tools depend on your OpenAPI specification. Each API endpoint becomes a tool named after its `operationId`.
+
+For example, if your API has these endpoints:
+
+- `GET /api/users` (operationId: `getUsers`)
+- `POST /api/users` (operationId: `createUser`)
+- `GET /api/users/{id}` (operationId: `getUserById`)
+
+Then you can ask Claude:
+
+- "Get all users from my API"
+- "Create a new user with name 'John Doe'"
+- "Get user with ID 123"
 
 ## Troubleshooting
 
-### Server won't start
+1. **Server won't start - "Cannot start MCP server without valid OpenAPI specification"**:
+   This means the server cannot fetch your OpenAPI spec.
+   - **Is the URL correct?** Check `API_SPEC_URL` in your `.env` file
+   - **Is your API running?** The OpenAPI spec URL must be accessible
+   - **Test the URL manually**: `curl https://localhost:7086/openapi/v1.json`
+   - **SSL/TLS issues?** If using `https://localhost`, you may need to configure SSL certificate trust
 
-**Error**: "Cannot start MCP server without valid OpenAPI specification"
+2. **Port already in use**: Change the port mapping in docker-compose.yml:
 
-**Solutions**:
-- Verify `API_SPEC_URL` is set and accessible
-- Check that your API is running
-- Test the URL: `curl http://your-api/swagger/v1/swagger.json`
+   ```yaml
+   ports:
+     - '3002:3000' # Use port 3002 on host instead
+   ```
 
-### Claude can't connect
+   Then update your MCP client configuration to use the new port and restart the container.
 
-**Solutions**:
-1. Verify the MCP server is running: `docker ps`
-2. Check logs: `docker-compose logs -f`
-3. Test the endpoint: `curl http://localhost:3001/mcp`
-4. Verify Claude Code configuration has the correct URL
+3. **Container won't start**: Check logs with `docker-compose logs -f openapi-mcp-server` or `docker logs openapi-mcp-server`
 
-### Tools not working
+4. **Can't connect from Claude Code**: Ensure:
+   - Docker container is running (`docker ps | grep openapi-mcp-server`)
+   - Port 3001 is exposed and accessible (`curl http://localhost:3001/mcp`)
+   - You should get a JSON-RPC response (even if it's an error, it means the server is responding).
+   - No firewall blocking the connection
+   - Using `http://localhost:3001/mcp` as the endpoint
+   - Claude Code config has correct URL
+   - Claude Code has been restarted
 
-**Check**:
-1. Server logs for errors: `docker-compose logs -f`
-2. API accessibility from within Docker
-3. OpenAPI spec validity
+5. **No tools appearing**:
+   - **Check the OpenAPI spec is valid**: Ensure your API is exposing a valid OpenAPI 3.0+ specification
+   - **Verify operationIds exist**: Each endpoint should have an `operationId` in the spec
+   - **Check server logs** for tool registration messages: `docker-compose logs -f | grep "Registering tool"`
 
-### Port conflicts
+6. **Server stopped unexpectedly**
 
-Change the port in `docker-compose.yml`:
-```yaml
-ports:
-  - "8080:3000"  # Use 8080 instead of 3001
-```
+   Restart the container:
 
-Then update Claude Code config to use the new port.
+   ```bash
+   docker-compose restart
+   ```
 
-## Advanced Configuration
+   Or stop and start fresh:
 
-### Custom Docker Network
-
-To connect with other Docker services:
-
-```yaml
-services:
-  openapi-mcp-server:
-    networks:
-      - my-network
-
-networks:
-  my-network:
-    external: true
-```
-
-### Environment-Specific Configuration
-
-Create multiple env files:
-- `.env.development`
-- `.env.production`
-
-Load with: `docker-compose --env-file .env.production up`
+   ```bash
+   docker-compose down
+   docker-compose up -d
+   ```
 
 ## Contributing
 
 Contributions are welcome! Areas for improvement:
+
 - Authentication support (API keys, OAuth, JWT)
 - Response caching
 - Rate limiting
 - OpenAPI schema validation improvements
 - Support for webhooks and callbacks
-
-## License
-
-MIT
-
-## Support
-
-For issues and questions:
-1. Check the troubleshooting section
-2. Review Docker logs: `docker-compose logs -f`
-3. Open an issue with:
-   - Your OpenAPI spec structure (sanitized)
-   - Error messages from logs
-   - Configuration (without sensitive data)

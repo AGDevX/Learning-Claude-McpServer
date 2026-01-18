@@ -15,6 +15,7 @@ MCP clients will automatically:
 - **Full OpenAPI Support**: Works with OpenAPI 3.0 and 3.1 specifications
 - **Parameter Mapping**: Converts OpenAPI parameters (path, query, header, body) to MCP tool inputs
 - **Type Safety**: Uses Zod schemas for runtime validation based on OpenAPI types
+- **Live Spec Refresh**: Update tools without restarting - existing tools automatically use the latest spec, new operations are registered on-the-fly
 - **Docker Support**: Easy deployment with Docker and Docker Compose
 - **Environment Configuration**: Flexible configuration via environment variables
 - **Error Handling**: Comprehensive error handling and logging
@@ -218,7 +219,7 @@ Ask Claude:
 
 ### Using the Tools
 
-The available tools depend on your OpenAPI specification. Each API endpoint becomes a tool named after its `operationId`.
+The available tools depend on your OpenAPI specification. Each API endpoint becomes a tool named after its `operationId`. Additionally, a special `refresh_openapi_spec` tool is always available to update the spec.
 
 For example, if your API has these endpoints:
 
@@ -231,6 +232,61 @@ Then you can ask Claude:
 - "Get all users from my API"
 - "Create a new user with name 'John Doe'"
 - "Get user with ID 123"
+
+## Refreshing the OpenAPI Spec
+
+The server includes a special `refresh_openapi_spec` tool that allows you to update the OpenAPI specification without restarting the MCP server or your Claude client connection.
+
+### When to Use
+
+Refresh the spec when:
+
+- Your API has been updated with new endpoints
+- Existing endpoints have changed (parameters, paths, etc.)
+- You want to ensure you're working with the latest API definition
+
+### How to Use
+
+Simply ask Claude:
+
+- "Refresh the OpenAPI spec"
+- "Get the latest API specification"
+- "Update the API spec"
+
+### What Happens
+
+When you refresh the spec:
+
+1. **Fetches the latest** OpenAPI specification from the configured URL
+2. **Updates existing tools** - All existing tools immediately start using the updated operation definitions (paths, parameters, request bodies, etc.)
+3. **Registers new operations** - Any new endpoints are automatically registered as new tools
+4. **Reports changes** - Returns a summary showing:
+   - API title and version
+   - Total number of operations
+   - How many new operations were added
+
+### Important Notes
+
+- **No restart required** - All changes take effect immediately
+- **Existing tools work instantly** - Updated paths and parameters are used on the next tool call
+- **New tools are available immediately** - You can start using newly discovered operations right away
+- **Tool metadata limitation** - For existing tools, the description and input schema shown to Claude won't update until you restart the connection (but the actual execution uses the latest spec)
+
+### Example
+
+```
+You: "Refresh the OpenAPI spec"
+
+Claude: [Calls refresh_openapi_spec tool]
+
+Result: "OpenAPI spec refreshed successfully!
+
+API: My API (v2.0.0)
+Total Operations: 25
+New Operations Registered: 3
+
+All existing tools have been updated to use the latest spec. New operations are now available."
+```
 
 ## Troubleshooting
 
@@ -280,13 +336,3 @@ Then you can ask Claude:
    docker-compose down
    docker-compose up -d
    ```
-
-## Contributing
-
-Contributions are welcome! Areas for improvement:
-
-- Authentication support (API keys, OAuth, JWT)
-- Response caching
-- Rate limiting
-- OpenAPI schema validation improvements
-- Support for webhooks and callbacks

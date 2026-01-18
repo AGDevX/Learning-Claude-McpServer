@@ -7,9 +7,49 @@ export const SERVER_CONFIG = {
 	defaultPort: 3000
 };
 
+//-- Parse environment configuration
+function parseEnvironmentConfig() {
+	const environmentsStr = process.env.ENVIRONMENTS || '';
+	const environments = environmentsStr
+		.split(',')
+		.map((e) => e.trim())
+		.filter((e) => e.length > 0);
+
+	//-- If no environments configured, return empty
+	if (environments.length === 0) {
+		return {
+			environments: [],
+			defaultEnvironment: '',
+			configs: {}
+		};
+	}
+
+	//-- Parse configuration for each environment
+	const configs: Record<string, { specUrl: string; baseUrl: string }> = {};
+
+	for (const env of environments) {
+		const envUpper = env.toUpperCase();
+		const specUrl = process.env[`API_SPEC_URL_${envUpper}`] || '';
+		const baseUrl = process.env[`API_BASE_URL_${envUpper}`] || '';
+
+		configs[env] = {
+			specUrl,
+			baseUrl
+		};
+	}
+
+	const defaultEnvironment = process.env.DEFAULT_ENVIRONMENT || environments[0];
+
+	return {
+		environments,
+		defaultEnvironment,
+		configs
+	};
+}
+
+export const ENVIRONMENT_CONFIG = parseEnvironmentConfig();
+
 export const OPENAPI_CONFIG = {
-	specUrl: process.env.API_SPEC_URL || '',
-	baseUrl: process.env.API_BASE_URL || '',
 	timeout: parseInt(process.env.API_TIMEOUT || THIRTY_SECONDS_IN_MS, 10),
 	refreshInterval: parseInt(process.env.SPEC_REFRESH_INTERVAL || '0', 10) //-- 0 means no refresh
 };

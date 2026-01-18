@@ -1,0 +1,118 @@
+import { OpenApiService } from './open-api-service.js';
+import { ENVIRONMENT_CONFIG, OPENAPI_CONFIG } from '../config.js';
+
+//-- Manages multiple OpenAPI service instances for different environments
+export class EnvironmentManager {
+	private services: Map<string, OpenApiService> = new Map();
+	private defaultEnvironment: string;
+	private environments: string[];
+
+	constructor() {
+		this.environments = ENVIRONMENT_CONFIG.environments;
+		this.defaultEnvironment = ENVIRONMENT_CONFIG.defaultEnvironment;
+
+		//-- Initialize OpenApiService for each environment
+		for (const env of this.environments) {
+			const config = ENVIRONMENT_CONFIG.configs[env];
+
+			if (!config || !config.specUrl) {
+				console.warn(`Environment ${env} is missing API_SPEC_URL configuration, skipping...`);
+				continue;
+			}
+
+			const service = new OpenApiService(config.specUrl, config.baseUrl);
+			this.services.set(env, service);
+		}
+
+		if (this.services.size === 0) {
+			throw new Error('No valid environments configured. Please configure at least one environment.');
+		}
+
+		console.log(`Configured environments: ${Array.from(this.services.keys()).join(', ')}`);
+		console.log(`Default environment: ${this.defaultEnvironment}`);
+	}
+
+	//-- Initialize all environments (fetch specs)
+	async initializeAll(): Promise<void> {
+		console.log('Initializing all environments...');
+
+		const promises: Promise<void>[] = [];
+
+		for (const [env, service] of this.services) {
+			promises.push(
+				service
+					.fetchSpec()
+					.then(() => {
+						console.log(`✓ Environment "${env}" initialized successfully`);
+					})
+					.catch((error) => {
+						console.error(`✗ Failed to initialize environment "${env}":`, error.message);
+						throw new Error(`Failed to initialize environment "${env}": ${error.message}`);
+					})
+			);
+		}
+
+		await Promise.all(promises);
+		console.log('All environments initialized successfully');
+	}
+
+	//-- Get service for a specific environment
+	getService(environment?: string): OpenApiService {
+		const env = environment || this.defaultEnvironment;
+
+		const service = this.services.get(env);
+		if (!service) {
+			throw new Error(`Environment "${env}" not found. Available environments: ${this.getEnvironments().join(', ')}`);
+		}
+
+		return service;
+	}
+
+	//-- Get list of all configured environments
+	getEnvironments(): string[] {
+		return Array.from(this.services.keys());
+	}
+
+	//-- Get the default environment name
+	getDefaultEnvironment(): string {
+		return this.defaultEnvironment;
+	}
+
+	//-- Check if an environment exists
+	hasEnvironment(environment: string): boolean {
+		return this.services.has(environment);
+	}
+
+	//-- Set the default environment
+	setDefaultEnvironment(environment: string): void {
+		if (!this.hasEnvironment(environment)) {
+			throw new Error(`Environment "${environment}" not found. Available environments: ${this.getEnvironments().join(', ')}`);
+		}
+
+		this.defaultEnvironment = environment;
+		console.log(`Default environment changed to: ${environment}`);
+	}
+
+	//-- Get environment info
+	async getEnvironmentInfo(environment?: string): Promise<{
+		environment: string;
+		apiTitle: string;
+		apiVersion: string;
+		baseUrl: string;
+		operationsCount: number;
+	}> {
+		const env = environment || this.defaultEnvironment;
+		const service = this.getService(env);
+
+		const apiInfo = await service.getApiInfo();
+		const operations = await service.getOperations();
+
+		return {
+			environment: env,
+			apiTitle: apiInfo.title,
+			apiVersion: apiInfo.version,
+			baseUrl: service.getBaseUrl(),
+			operationsCount: operations.length
+		};
+	}
+}

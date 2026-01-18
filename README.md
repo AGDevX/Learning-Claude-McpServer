@@ -15,10 +15,11 @@ MCP clients will automatically:
 - **Full OpenAPI Support**: Works with OpenAPI 3.0 and 3.1 specifications
 - **Parameter Mapping**: Converts OpenAPI parameters (path, query, header, body) to MCP tool inputs
 - **Type Safety**: Uses Zod schemas for runtime validation based on OpenAPI types
+- **Multi-Environment Support**: Configure multiple API environments (dev, qa, prod) and switch between them per-request
 - **Live Spec Refresh**: Update tools without restarting - existing tools automatically use the latest spec, new operations are registered on-the-fly
 - **Rate Limiting**: Built-in protection for production APIs with configurable request limits
 - **Docker Support**: Easy deployment with Docker and Docker Compose
-- **Environment Configuration**: Flexible configuration via environment variables
+- **Flexible Configuration**: Environment variables for all settings
 - **Error Handling**: Comprehensive error handling and logging
 
 ## How It Works
@@ -43,17 +44,54 @@ MCP clients will automatically:
 
 All configuration is done via environment variables:
 
-| Variable                | Required | Default              | Description                                                     |
-| ----------------------- | -------- | -------------------- | --------------------------------------------------------------- |
-| `API_SPEC_URL`          | Yes      | -                    | URL to OpenAPI specification (e.g., `/swagger/v1/swagger.json`) |
-| `API_BASE_URL`          | No       | From spec            | Base URL for API calls (overrides spec servers)                 |
-| `MCP_SERVER_NAME`       | No       | `openapi-mcp-server` | Name of the MCP server                                          |
-| `PORT`                  | No       | `3000`               | Port for the MCP server                                         |
-| `API_TIMEOUT`           | No       | `30000`              | API request timeout in milliseconds                             |
-| `SPEC_REFRESH_INTERVAL` | No       | `0`                  | How often to refresh spec (0 = never)                           |
-| `RATE_LIMIT_ENABLED`    | No       | `true`               | Enable/disable rate limiting (`true` or `false`)                |
-| `RATE_LIMIT_REQUESTS`   | No       | `10`                 | Maximum number of requests allowed in time window               |
-| `RATE_LIMIT_WINDOW_MS`  | No       | `60000`              | Rate limit time window in milliseconds (default: 60 seconds)    |
+### General Configuration
+
+| Variable                | Required | Default              | Description                                                  |
+| ----------------------- | -------- | -------------------- | ------------------------------------------------------------ |
+| `MCP_SERVER_NAME`       | No       | `openapi-mcp-server` | Name of the MCP server                                       |
+| `PORT`                  | No       | `3000`               | Port for the MCP server                                      |
+| `API_TIMEOUT`           | No       | `30000`              | API request timeout in milliseconds                          |
+| `SPEC_REFRESH_INTERVAL` | No       | `0`                  | How often to refresh spec (0 = never)                        |
+| `RATE_LIMIT_ENABLED`    | No       | `true`               | Enable/disable rate limiting (`true` or `false`)             |
+| `RATE_LIMIT_REQUESTS`   | No       | `10`                 | Maximum number of requests allowed in time window            |
+| `RATE_LIMIT_WINDOW_MS`  | No       | `60000`              | Rate limit time window in milliseconds (default: 60 seconds) |
+
+### Environment Configuration
+
+| Variable              | Required | Default   | Description                                                                    |
+| --------------------- | -------- | --------- | ------------------------------------------------------------------------------ |
+| `ENVIRONMENTS`        | Yes      | -         | Comma-separated list of environment names (e.g., `dev,qa,prod` or just `prod`) |
+| `DEFAULT_ENVIRONMENT` | No       | First     | Default environment to use when not specified                                  |
+| `API_SPEC_URL_{ENV}`  | Yes\*    | -         | OpenAPI spec URL for each environment (e.g., `API_SPEC_URL_DEV`)               |
+| `API_BASE_URL_{ENV}`  | No       | From spec | Base URL for each environment (e.g., `API_BASE_URL_DEV`)                       |
+
+\*Required for each environment listed in `ENVIRONMENTS`
+
+### Configuration Examples
+
+**Single Environment:**
+
+```bash
+ENVIRONMENTS=prod
+API_SPEC_URL_PROD=https://api.example.com/openapi/v1.json
+API_BASE_URL_PROD=https://api.example.com
+```
+
+**Multiple Environments:**
+
+```bash
+ENVIRONMENTS=dev,qa,prod
+DEFAULT_ENVIRONMENT=dev
+
+API_SPEC_URL_DEV=https://dev-api.example.com/openapi/v1.json
+API_BASE_URL_DEV=https://dev-api.example.com
+
+API_SPEC_URL_QA=https://qa-api.example.com/openapi/v1.json
+API_BASE_URL_QA=https://qa-api.example.com
+
+API_SPEC_URL_PROD=https://api.example.com/openapi/v1.json
+API_BASE_URL_PROD=https://api.example.com
+```
 
 ## Building and Running with Docker
 
@@ -236,6 +274,81 @@ Then you can ask Claude:
 - "Get all users from my API"
 - "Create a new user with name 'John Doe'"
 - "Get user with ID 123"
+
+## Working with Multiple Environments
+
+If you have multiple environments configured (dev, qa, prod), you can switch between them on a per-request basis.
+
+### How It Works
+
+Every API tool includes an optional `environment` parameter. When not specified, the default environment is used. You can:
+
+- Execute the same request in different environments
+- Compare responses across environments
+- Test in dev, verify in qa, deploy to prod - all without restarting
+
+### Managing Environments
+
+The server provides three tools for environment management:
+
+- **`list_environments`** - View all configured environments and their details
+- **`get_current_environment`** - Check which environment is currently default
+- **`set_default_environment`** - Change the default environment
+
+### Usage Examples
+
+**List all environments:**
+
+```
+You: "List all available environments"
+
+Claude: [Calls list_environments tool]
+
+Configured Environments:
+
+- dev (default): My API v1.0.0 - https://dev-api.example.com (25 operations)
+- qa: My API v1.0.0 - https://qa-api.example.com (25 operations)
+- prod: My API v1.0.0 - https://api.example.com (25 operations)
+
+Use the "environment" parameter in any tool to specify which environment to use.
+```
+
+**Execute a request in a specific environment:**
+
+```
+You: "Get all users from the dev environment"
+
+Claude: [Calls getUsers tool with environment: "dev"]
+```
+
+**Compare across environments:**
+
+```
+You: "Get user with ID 123 from dev, then get the same user from prod"
+
+Claude: [Calls getUserById with environment: "dev", then with environment: "prod"]
+```
+
+**Change the default environment:**
+
+```
+You: "Set the default environment to prod"
+
+Claude: [Calls set_default_environment with environment: "prod"]
+
+Default environment changed to: prod
+
+API: My API v1.0.0
+Base URL: https://api.example.com
+Operations: 25
+```
+
+### Best Practices
+
+- **Development**: Use dev environment by default for testing
+- **Verification**: Switch to qa for verification before production
+- **Production**: Explicitly specify `environment: "prod"` for production operations
+- **Safety**: Keep prod as a non-default environment to avoid accidental changes
 
 ## Refreshing the OpenAPI Spec
 

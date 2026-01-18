@@ -1,31 +1,38 @@
 {
-	"name": "claude-mcpserver",
+	"name": "openapi-mcp-server",
 	"version": "1.0.0",
-	"description": "Learning to build an MCP Server with TypeScript and host it in a Docker container",
+	"description": "MCP Server that dynamically exposes OpenAPI/Swagger specifications as tools for Claude",
 	"author": "",
 	"license": "MIT",
 	"type": "module",
 	"main": "dist/index.js",
 	"bin": {
-		"weather-mcp-server": "dist/index.js"
+		"openapi-mcp-server": "dist/index.js"
 	},
 	"scripts": {
-		"build": "tsc",
+		"build": "rimraf dist && tsc",
 		"start": "node dist/index.js",
 		"dev": "tsx src/index.ts",
 		"watch": "tsc --watch"
 	},
 	"keywords": [
 		"mcp",
-		"weather",
-		"server"
+		"openapi",
+		"swagger",
+		"api",
+		"claude",
+		"server",
+		"dotnet"
 	],
 	"dependencies": {
-		"@modelcontextprotocol/sdk": "^1.0.0"
+		"@modelcontextprotocol/sdk": "^1.0.0",
+		"axios": "^1.7.9",
+		"openapi-types": "^12.1.3"
 	},
 	"devDependencies": {
 		"@types/express": "^5.0.6",
 		"@types/node": "^22.10.5",
+		"rimraf": "^6.1.2",
 		"tsx": "^4.19.2",
 		"typescript": "^5.7.2"
 	}

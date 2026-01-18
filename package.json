@@ -10,7 +10,7 @@
 		"openapi-mcp-server": "dist/index.js"
 	},
 	"scripts": {
-		"build": "tsc",
+		"build": "rimraf dist && tsc",
 		"start": "node dist/index.js",
 		"dev": "tsx src/index.ts",
 		"watch": "tsc --watch"
@@ -32,6 +32,7 @@
 	"devDependencies": {
 		"@types/express": "^5.0.6",
 		"@types/node": "^22.10.5",
+		"rimraf": "^6.1.2",
 		"tsx": "^4.19.2",
 		"typescript": "^5.7.2"
 	}

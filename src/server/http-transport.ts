@@ -5,6 +5,7 @@ import { createMcpExpressApp } from '@modelcontextprotocol/sdk/server/express.js
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import { createApiServer } from './mcp-server.js';
 import { SessionManager } from '../services/session-manager.js';
+import { logger } from '../utils/logger.js';
 
 //-- Create and configure the Express app with MCP HTTP transport handlers
 export function createMcpHttpApp(): Express {
@@ -16,7 +17,7 @@ export function createMcpHttpApp(): Express {
 		const sessionId = req.headers['mcp-session-id'] as string | undefined;
 
 		if (sessionId) {
-			console.log(`Received MCP request for session: ${sessionId}`);
+			logger.log(`Received MCP request for session: ${sessionId}`);
 		}
 
 		try {
@@ -30,7 +31,7 @@ export function createMcpHttpApp(): Express {
 				transport = new StreamableHTTPServerTransport({
 					sessionIdGenerator: () => randomUUID(),
 					onsessioninitialized: (newSessionId) => {
-						console.log(`Session initialized with ID: ${newSessionId}`);
+						logger.log(`Session initialized with ID: ${newSessionId}`);
 						sessionManager.add(newSessionId, transport);
 					}
 				});
@@ -39,7 +40,7 @@ export function createMcpHttpApp(): Express {
 				transport.onclose = () => {
 					const sid = transport.sessionId;
 					if (sid && sessionManager.get(sid)) {
-						console.log(`Transport closed for session ${sid}`);
+						logger.log(`Transport closed for session ${sid}`);
 						sessionManager.delete(sid);
 					}
 				};
@@ -88,7 +89,7 @@ export function createMcpHttpApp(): Express {
 			return;
 		}
 
-		console.log(`Establishing SSE stream for session ${sessionId}`);
+		logger.log(`Establishing SSE stream for session ${sessionId}`);
 		const transport = sessionManager.get(sessionId)!;
 		await transport.handleRequest(req, res);
 	});
@@ -102,14 +103,14 @@ export function createMcpHttpApp(): Express {
 			return;
 		}
 
-		console.log(`Session termination request for session ${sessionId}`);
+		logger.log(`Session termination request for session ${sessionId}`);
 		const transport = sessionManager.get(sessionId)!;
 		await transport.handleRequest(req, res);
 	});
 
 	//-- Graceful shutdown handler
 	const shutdown = async () => {
-		console.log('Shutting down server...');
+		logger.log('Shutting down server...');
 		await sessionManager.closeAll();
 		process.exit(0);
 	};

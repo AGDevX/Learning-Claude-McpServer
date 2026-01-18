@@ -1,5 +1,6 @@
 import { OpenApiService } from './open-api-service.js';
 import { ENVIRONMENT_CONFIG, OPENAPI_CONFIG } from '../config.js';
+import { logger } from '../utils/logger.js';
 
 //-- Manages multiple OpenAPI service instances for different environments
 export class EnvironmentManager {
@@ -16,7 +17,7 @@ export class EnvironmentManager {
 			const config = ENVIRONMENT_CONFIG.configs[env];
 
 			if (!config || !config.specUrl) {
-				console.warn(`Environment ${env} is missing API_SPEC_URL configuration, skipping...`);
+				logger.warn(`Environment ${env} is missing API_SPEC_URL configuration, skipping...`);
 				continue;
 			}
 
@@ -28,13 +29,13 @@ export class EnvironmentManager {
 			throw new Error('No valid environments configured. Please configure at least one environment.');
 		}
 
-		console.log(`Configured environments: ${Array.from(this.services.keys()).join(', ')}`);
-		console.log(`Default environment: ${this.defaultEnvironment}`);
+		logger.log(`Configured environments: ${Array.from(this.services.keys()).join(', ')}`);
+		logger.log(`Default environment: ${this.defaultEnvironment}`);
 	}
 
 	//-- Initialize all environments (fetch specs)
 	async initializeAll(): Promise<void> {
-		console.log('Initializing all environments...');
+		logger.log('Initializing all environments...');
 
 		const promises: Promise<void>[] = [];
 
@@ -43,17 +44,17 @@ export class EnvironmentManager {
 				service
 					.fetchSpec()
 					.then(() => {
-						console.log(`✓ Environment "${env}" initialized successfully`);
+						logger.log(`✓ Environment "${env}" initialized successfully`);
 					})
 					.catch((error) => {
-						console.error(`✗ Failed to initialize environment "${env}":`, error.message);
+						logger.error(`✗ Failed to initialize environment "${env}":`, error.message);
 						throw new Error(`Failed to initialize environment "${env}": ${error.message}`);
 					})
 			);
 		}
 
 		await Promise.all(promises);
-		console.log('All environments initialized successfully');
+		logger.log('All environments initialized successfully');
 	}
 
 	//-- Get service for a specific environment
@@ -90,7 +91,7 @@ export class EnvironmentManager {
 		}
 
 		this.defaultEnvironment = environment;
-		console.log(`Default environment changed to: ${environment}`);
+		logger.log(`Default environment changed to: ${environment}`);
 	}
 
 	//-- Get environment info

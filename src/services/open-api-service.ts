@@ -2,6 +2,7 @@ import axios, { AxiosInstance } from 'axios';
 import https from 'https';
 import type { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 import { OPENAPI_CONFIG } from '../config.js';
+import { logger } from '../utils/logger.js';
 
 type OpenAPIDocument = OpenAPIV3.Document | OpenAPIV3_1.Document;
 type OperationObject = OpenAPIV3.OperationObject | OpenAPIV3_1.OperationObject;
@@ -45,7 +46,7 @@ export class OpenApiService {
 		}
 
 		try {
-			console.log(`Fetching OpenAPI spec from: ${this.specUrl}`);
+			logger.log(`Fetching OpenAPI spec from: ${this.specUrl}`);
 			const response = await axios.get<OpenAPIDocument>(this.specUrl, {
 				timeout: OPENAPI_CONFIG.timeout,
 				httpsAgent: new https.Agent()
@@ -53,7 +54,7 @@ export class OpenApiService {
 
 			this.spec = response.data;
 			this.lastFetch = new Date();
-			console.log(`OpenAPI spec loaded successfully. Title: ${this.spec.info?.title}, Version: ${this.spec.info?.version}`);
+			logger.log(`OpenAPI spec loaded successfully. Title: ${this.spec.info?.title}, Version: ${this.spec.info?.version}`);
 
 			return this.spec;
 		} catch (error) {
@@ -72,7 +73,7 @@ export class OpenApiService {
 
 		//-- Check if refresh is needed
 		if (OPENAPI_CONFIG.refreshInterval > 0 && this.lastFetch && Date.now() - this.lastFetch.getTime() > OPENAPI_CONFIG.refreshInterval) {
-			console.log('Refreshing OpenAPI spec...');
+			logger.log('Refreshing OpenAPI spec...');
 			await this.fetchSpec();
 		}
 
@@ -172,7 +173,7 @@ export class OpenApiService {
 		}
 
 		try {
-			console.log(`Executing ${operation.method} ${url}`);
+			logger.log(`Executing ${operation.method} ${url}`);
 
 			const response = await this.apiClient.request({
 				method: operation.method,

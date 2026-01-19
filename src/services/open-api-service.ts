@@ -211,4 +211,22 @@ export class OpenApiService {
 		const operations = await this.getOperations();
 		return operations.find((op) => op.operationId === operationId) || null;
 	}
+
+	//-- Get the last fetch timestamp
+	getLastFetchTime(): Date | null {
+		return this.lastFetch;
+	}
+
+	//-- Check if environment is reachable by attempting to fetch spec
+	async checkReachability(): Promise<boolean> {
+		try {
+			await axios.get(this.specUrl, {
+				timeout: 5000, //-- Quick timeout for health check
+				httpsAgent: new https.Agent()
+			});
+			return true;
+		} catch {
+			return false;
+		}
+	}
 }

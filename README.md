@@ -220,6 +220,7 @@ Ask Claude:
 - "What tools are available from my API?"
 - "Get all users from my API"
 - "List all available environments"
+- "Check server status"
 
 ## Features
 
@@ -249,6 +250,7 @@ Every API tool includes an optional `environment` parameter. Switch between envi
 - `list_environments` - View all configured environments
 - `get_current_environment` - Check current default
 - `set_default_environment` - Change default
+- `check_server_status` - Health check with environment reachability, rate limits, and tool counts
 
 ### Refresh Spec Without Restarting
 
@@ -278,6 +280,35 @@ RATE_LIMIT_ENABLED=true
 RATE_LIMIT_REQUESTS=10
 RATE_LIMIT_WINDOW_MS=60000
 ```
+
+### Server Status & Health Check
+
+Monitor server health and status with the `check_server_status` tool:
+
+```
+"Check server status"
+```
+
+This provides:
+
+- **Environment Status**: Shows which environments are reachable with ✓/✗ indicators
+- **Rate Limit Usage**: Current request count vs. limit with time until reset
+- **Available Tools**: Total count of API operations and management tools
+- **Last Spec Refresh**: Time since the OpenAPI spec was last fetched
+
+Example output:
+```
+Environments: 2 (prod✓, dev✗ unreachable)
+Rate Limit: 3/10 requests used (resets in 45s)
+Tools Available: 15
+Last Spec Refresh: 2 minutes ago
+```
+
+Use this to:
+- Verify all environments are accessible
+- Monitor rate limit usage before making bulk API calls
+- Confirm spec refreshes are working
+- Check total available tools after updates
 
 ## Troubleshooting
 

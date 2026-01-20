@@ -17,16 +17,18 @@ Turn any OpenAPI specification into MCP tools for AI assistants. Point it at you
 The easiest way to configure this server is through the web-based setup wizard:
 
 ```bash
-npx agdevx-openapi-mcp-server setup
+npx agdevx-openapi-mcp-server@latest setup
 ```
 
 This launches a browser-based wizard that:
+
 1. Guides you through entering your API details
 2. Tests your OpenAPI spec URLs to verify they work
 3. Auto-detects which MCP clients you have installed
 4. Automatically updates your config file (with backup) or shows you what to copy
 
 **Features:**
+
 - Visual multi-step wizard
 - Real-time URL validation
 - Support for multiple environments (dev, qa, prod)
@@ -34,12 +36,13 @@ This launches a browser-based wizard that:
 - Safe auto-update with backups or manual copy option
 
 **Options:**
+
 ```bash
 # Custom port
-npx agdevx-openapi-mcp-server setup --port 3001
+npx agdevx-openapi-mcp-server@latest setup --port 3001
 
 # Don't auto-open browser
-npx agdevx-openapi-mcp-server setup --no-open
+npx agdevx-openapi-mcp-server@latest setup --no-open
 ```
 
 After configuring, restart your MCP client and the server will be available.
@@ -74,16 +77,16 @@ API_SPEC_URL_PROD=https://api.example.com/openapi/v1.json
 
 ### Optional Settings
 
-| Variable                        | Default                     | Description                                                                      |
-| ------------------------------- | --------------------------- | -------------------------------------------------------------------------------- |
-| `MCP_SERVER_NAME`               | `agdevx-openapi-mcp-server` | Give a custom name to the server (e.g., account-api)                            |
-| `MCP_VERBOSE`                   | `false`                     | Enable verbose logging                                                           |
-| `PORT`                          | `3000`                      | Port for HTTP transport (Docker)                                                 |
-| `API_TIMEOUT`                   | `30000`                     | API request timeout (ms)                                                         |
-| `NODE_TLS_REJECT_UNAUTHORIZED`  | `1` (enabled)               | TLS certificate verification. Set to `0` to disable for self-signed certs (dev) |
-| `RATE_LIMIT_ENABLED`            | `true`                      | Enable rate limiting                                                             |
-| `RATE_LIMIT_REQUESTS`           | `10`                        | Max requests per window                                                          |
-| `RATE_LIMIT_WINDOW_MS`          | `60000`                     | Rate limit window (ms)                                                           |
+| Variable                       | Default                     | Description                                                                     |
+| ------------------------------ | --------------------------- | ------------------------------------------------------------------------------- |
+| `MCP_SERVER_NAME`              | `agdevx-openapi-mcp-server` | Give a custom name to the server (e.g., account-api)                            |
+| `MCP_VERBOSE`                  | `false`                     | Enable verbose logging                                                          |
+| `PORT`                         | `3000`                      | Port for HTTP transport (Docker)                                                |
+| `API_TIMEOUT`                  | `30000`                     | API request timeout (ms)                                                        |
+| `NODE_TLS_REJECT_UNAUTHORIZED` | `1` (enabled)               | TLS certificate verification. Set to `0` to disable for self-signed certs (dev) |
+| `RATE_LIMIT_ENABLED`           | `true`                      | Enable rate limiting                                                            |
+| `RATE_LIMIT_REQUESTS`          | `10`                        | Max requests per window                                                         |
+| `RATE_LIMIT_WINDOW_MS`         | `60000`                     | Rate limit window (ms)                                                          |
 
 See `.env.example` for all available options.
 
@@ -237,11 +240,13 @@ Tools are automatically named in an intuitive, friendly way:
 - `delete_api_v1_users_id` → **`delete_user`**
 
 **Enhanced descriptions** include required parameters:
+
 - "Create a new user. Requires: name, email, body."
 - "Get a single user. Requires: id."
 - "List users"
 
 The server intelligently:
+
 - Converts camelCase operationIds to snake_case (`getUserProfile` → `get_user_profile`)
 - Generates friendly names from HTTP method + resource path
 - **Handles non-RESTful APIs**: Parses camelCase (`/searchItems`), kebab-case (`/calculate-tax`), and RPC-style paths
@@ -325,6 +330,7 @@ This provides:
 - **Last Spec Refresh**: Time since the OpenAPI spec was last fetched
 
 Example output:
+
 ```
 Environments: 2 (prod✓, dev✗ unreachable)
 Rate Limit: 3/10 requests used (resets in 45s)
@@ -333,6 +339,7 @@ Last Spec Refresh: 2 minutes ago
 ```
 
 Use this to:
+
 - Verify all environments are accessible
 - Monitor rate limit usage before making bulk API calls
 - Confirm spec refreshes are working

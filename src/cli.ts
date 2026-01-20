@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { startConfigUI } from './config-ui/server.js';
+import { startSetup } from './setup/server.js';
 import { startServer } from './server.js';
 
 const program = new Command();
@@ -22,17 +22,17 @@ program
 		await startServer();
 	});
 
-//-- Config UI command
+//-- Setup command
 program
-	.command('config-ui')
-	.description('Launch the web-based configuration UI')
-	.option('-p, --port <port>', 'Port to run the config UI on', '3000')
+	.command('setup')
+	.description('Launch the web-based setup wizard')
+	.option('-p, --port <port>', 'Port to run the setup wizard on', '3000')
 	.option('--no-open', 'Do not automatically open the browser')
 	.action(async (options) => {
 		const port = parseInt(options.port, 10);
 		const openBrowser = options.open !== false;
 
-		await startConfigUI({
+		await startSetup({
 			port,
 			openBrowser
 		});

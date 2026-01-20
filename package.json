@@ -19,7 +19,7 @@
 	},
 	"scripts": {
 		"build": "rimraf dist && tsc && npm run copy-assets",
-		"copy-assets": "node -e \"require('fs').cpSync('src/config-ui/ui.html', 'dist/config-ui/ui.html')\"",
+		"copy-assets": "node -e \"require('fs').cpSync('src/setup/ui.html', 'dist/setup/ui.html')\"",
 		"start": "node dist/index.js",
 		"dev": "tsx src/index.ts",
 		"watch": "tsc --watch",

@@ -18,7 +18,8 @@
 		"node": ">=18.0.0"
 	},
 	"scripts": {
-		"build": "rimraf dist && tsc",
+		"build": "rimraf dist && tsc && npm run copy-assets",
+		"copy-assets": "node -e \"require('fs').cpSync('src/config-ui/ui.html', 'dist/config-ui/ui.html')\"",
 		"start": "node dist/index.js",
 		"dev": "tsx src/index.ts",
 		"watch": "tsc --watch",

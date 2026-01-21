@@ -1,16 +1,16 @@
 import express from 'express';
+import open from 'open';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import open from 'open';
-import { validateOpenApiUrl } from './validator.js';
-import { detectClients, readConfig, writeConfig, getConfigPath } from './config-manager.js';
+
+import { detectClients, getConfigPath,readConfig, writeConfig } from './config-manager.js';
 import { generateConfig } from './templates.js';
 import type {
-	ValidateUrlRequest,
-	SaveConfigRequest,
 	McpClientType,
-	SaveConfigResponse
-} from './types.js';
+	SaveConfigRequest,
+	SaveConfigResponse,
+	ValidateUrlRequest} from './types.js';
+import { validateOpenApiUrl } from './validator.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

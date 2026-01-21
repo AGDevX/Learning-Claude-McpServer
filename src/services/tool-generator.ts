@@ -1,5 +1,6 @@
-import { z } from 'zod';
 import type { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
+import { z } from 'zod';
+
 import { ApiOperation } from './open-api-service.js';
 
 type ParameterObject = OpenAPIV3.ParameterObject | OpenAPIV3_1.ParameterObject;

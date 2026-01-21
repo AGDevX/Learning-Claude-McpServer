@@ -1,6 +1,7 @@
 import axios from 'axios';
 import https from 'https';
 import type { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
+
 import type { ValidateUrlResponse } from './types.js';
 
 type OpenAPIDocument = OpenAPIV3.Document | OpenAPIV3_1.Document;

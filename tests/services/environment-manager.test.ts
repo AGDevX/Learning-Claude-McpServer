@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach } from '@jest/globals';
+import { beforeEach,describe, expect, it } from '@jest/globals';
+
 import { EnvironmentManager } from '../../src/services/environment-manager.js';
 
 // Note: EnvironmentManager depends on global ENVIRONMENT_CONFIG which is set at module load time

@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+
 import type { EnvironmentConfig } from '../../src/setup/types.js';
 
 // Mock modules before importing the module under test

@@ -2,8 +2,9 @@
 
 import { createMcpHttpApp } from '@server/http-transport.js';
 import { startStdioServer } from '@server/stdio-transport.js';
-import { SERVER_CONFIG, ENVIRONMENT_CONFIG } from './config.js';
 import { logger } from '@utils/logger.js';
+
+import { ENVIRONMENT_CONFIG,SERVER_CONFIG } from './config.js';
 
 //-- Determine which transport to use
 function getTransport(): 'stdio' | 'http' {

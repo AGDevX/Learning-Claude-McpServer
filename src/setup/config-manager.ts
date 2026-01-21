@@ -1,8 +1,9 @@
 import fs from 'fs/promises';
-import path from 'path';
 import os from 'os';
-import type { McpClientType, EnvironmentConfig } from './types.js';
+import path from 'path';
+
 import { generateConfig } from './templates.js';
+import type { EnvironmentConfig,McpClientType } from './types.js';
 
 //-- Get platform-specific config file path for MCP clients
 export function getConfigPath(clientType: McpClientType): string {

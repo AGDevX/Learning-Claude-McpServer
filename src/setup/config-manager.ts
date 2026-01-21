@@ -76,6 +76,7 @@ async function createBackup(configPath: string): Promise<boolean> {
 }
 
 //-- Merge new server config into existing config
+//-- If a server with the same name exists, it will be completely replaced with the new configuration
 function mergeConfig(existingConfig: any, newConfig: any, clientType: McpClientType): any {
 	//-- For VS Code, merge into "servers" property
 	if (clientType === 'vscode') {
@@ -83,7 +84,7 @@ function mergeConfig(existingConfig: any, newConfig: any, clientType: McpClientT
 			...existingConfig,
 			servers: {
 				...(existingConfig.servers || {}),
-				...newConfig.servers
+				...newConfig.servers // Replaces entire server config if name matches
 			}
 		};
 	}
@@ -93,7 +94,7 @@ function mergeConfig(existingConfig: any, newConfig: any, clientType: McpClientT
 		...existingConfig,
 		mcpServers: {
 			...(existingConfig.mcpServers || {}),
-			...newConfig.mcpServers
+			...newConfig.mcpServers // Replaces entire server config if name matches
 		}
 	};
 }
@@ -103,11 +104,12 @@ export async function writeConfig(
 	clientType: McpClientType,
 	serverName: string,
 	environments: EnvironmentConfig[],
-	defaultEnvironment: string
+	defaultEnvironment: string,
+	advancedSettings?: Record<string, string>
 ): Promise<{ success: boolean; path: string; backedUp?: boolean; error?: string }> {
 	try {
 		const configPath = getConfigPath(clientType);
-		const newConfig = generateConfig(clientType, serverName, environments, defaultEnvironment);
+		const newConfig = generateConfig(clientType, serverName, environments, defaultEnvironment, advancedSettings);
 
 		//-- Ensure parent directory exists
 		const parentDir = path.dirname(configPath);

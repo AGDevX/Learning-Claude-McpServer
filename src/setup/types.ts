@@ -46,6 +46,7 @@ export interface SaveConfigRequest {
 	environments: EnvironmentConfig[];
 	defaultEnvironment: string;
 	autoUpdate: boolean;
+	advancedSettings?: Record<string, string>;
 }
 
 export interface SaveConfigResponse {

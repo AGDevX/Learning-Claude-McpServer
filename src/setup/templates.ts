@@ -3,7 +3,8 @@ import type { EnvironmentConfig, McpClientType } from './types.js';
 //-- Generate environment variables object for MCP client config
 export function generateEnvironmentVars(
 	environments: EnvironmentConfig[],
-	defaultEnvironment: string
+	defaultEnvironment: string,
+	advancedSettings?: Record<string, string>
 ): Record<string, string> {
 	const envVars: Record<string, string> = {};
 
@@ -25,6 +26,11 @@ export function generateEnvironmentVars(
 		}
 	}
 
+	//-- Add advanced settings if provided
+	if (advancedSettings) {
+		Object.assign(envVars, advancedSettings);
+	}
+
 	return envVars;
 }
 
@@ -32,9 +38,10 @@ export function generateEnvironmentVars(
 export function generateVSCodeConfig(
 	serverName: string,
 	environments: EnvironmentConfig[],
-	defaultEnvironment: string
+	defaultEnvironment: string,
+	advancedSettings?: Record<string, string>
 ) {
-	const envVars = generateEnvironmentVars(environments, defaultEnvironment);
+	const envVars = generateEnvironmentVars(environments, defaultEnvironment, advancedSettings);
 
 	return {
 		servers: {
@@ -52,9 +59,10 @@ export function generateVSCodeConfig(
 export function generateClaudeDesktopConfig(
 	serverName: string,
 	environments: EnvironmentConfig[],
-	defaultEnvironment: string
+	defaultEnvironment: string,
+	advancedSettings?: Record<string, string>
 ) {
-	const envVars = generateEnvironmentVars(environments, defaultEnvironment);
+	const envVars = generateEnvironmentVars(environments, defaultEnvironment, advancedSettings);
 
 	return {
 		mcpServers: {
@@ -71,9 +79,10 @@ export function generateClaudeDesktopConfig(
 export function generateClaudeCodeConfig(
 	serverName: string,
 	environments: EnvironmentConfig[],
-	defaultEnvironment: string
+	defaultEnvironment: string,
+	advancedSettings?: Record<string, string>
 ) {
-	const envVars = generateEnvironmentVars(environments, defaultEnvironment);
+	const envVars = generateEnvironmentVars(environments, defaultEnvironment, advancedSettings);
 
 	return {
 		mcpServers: {
@@ -91,15 +100,16 @@ export function generateConfig(
 	clientType: McpClientType,
 	serverName: string,
 	environments: EnvironmentConfig[],
-	defaultEnvironment: string
+	defaultEnvironment: string,
+	advancedSettings?: Record<string, string>
 ): any {
 	switch (clientType) {
 		case 'vscode':
-			return generateVSCodeConfig(serverName, environments, defaultEnvironment);
+			return generateVSCodeConfig(serverName, environments, defaultEnvironment, advancedSettings);
 		case 'claude-desktop':
-			return generateClaudeDesktopConfig(serverName, environments, defaultEnvironment);
+			return generateClaudeDesktopConfig(serverName, environments, defaultEnvironment, advancedSettings);
 		case 'claude-code':
-			return generateClaudeCodeConfig(serverName, environments, defaultEnvironment);
+			return generateClaudeCodeConfig(serverName, environments, defaultEnvironment, advancedSettings);
 		default:
 			throw new Error(`Unknown client type: ${clientType}`);
 	}

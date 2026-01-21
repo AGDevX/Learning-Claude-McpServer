@@ -98,7 +98,8 @@ export function createSetupApp(): express.Application {
 	//-- API: Save configuration
 	app.post('/api/save-config', async (req, res) => {
 		try {
-			const { client, serverName, environments, defaultEnvironment, autoUpdate } = req.body as SaveConfigRequest;
+			const { client, serverName, environments, defaultEnvironment, autoUpdate, advancedSettings } =
+				req.body as SaveConfigRequest;
 
 			//-- Validate inputs
 			if (!client || !['vscode', 'claude-desktop', 'claude-code'].includes(client)) {
@@ -147,11 +148,11 @@ export function createSetupApp(): express.Application {
 
 			//-- If autoUpdate is true, write to config file
 			if (autoUpdate) {
-				const result = await writeConfig(clientType, serverName, environments, defaultEnvironment);
+				const result = await writeConfig(clientType, serverName, environments, defaultEnvironment, advancedSettings);
 
 				if (!result.success) {
 					//-- Fall back to manual mode if write fails
-					const config = generateConfig(clientType, serverName, environments, defaultEnvironment);
+					const config = generateConfig(clientType, serverName, environments, defaultEnvironment, advancedSettings);
 					return res.json({
 						success: false,
 						config,
@@ -164,7 +165,7 @@ export function createSetupApp(): express.Application {
 			}
 
 			//-- Manual mode: just return the config
-			const config = generateConfig(clientType, serverName, environments, defaultEnvironment);
+			const config = generateConfig(clientType, serverName, environments, defaultEnvironment, advancedSettings);
 			const configPath = getConfigPath(clientType);
 
 			res.json({

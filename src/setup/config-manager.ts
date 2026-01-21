@@ -103,11 +103,12 @@ export async function writeConfig(
 	clientType: McpClientType,
 	serverName: string,
 	environments: EnvironmentConfig[],
-	defaultEnvironment: string
+	defaultEnvironment: string,
+	advancedSettings?: Record<string, string>
 ): Promise<{ success: boolean; path: string; backedUp?: boolean; error?: string }> {
 	try {
 		const configPath = getConfigPath(clientType);
-		const newConfig = generateConfig(clientType, serverName, environments, defaultEnvironment);
+		const newConfig = generateConfig(clientType, serverName, environments, defaultEnvironment, advancedSettings);
 
 		//-- Ensure parent directory exists
 		const parentDir = path.dirname(configPath);

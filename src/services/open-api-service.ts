@@ -26,9 +26,23 @@ export class OpenApiService {
 	private specUrl: string;
 	private baseUrl: string;
 
-	constructor(specUrl: string, baseUrl?: string) {
+	constructor(specUrl: string, baseUrl: string) {
+		if (!specUrl) {
+			throw new Error(
+				'API_SPEC_URL is required.\n\n' +
+					'Action required: Set API_SPEC_URL_{ENVIRONMENT} in your .env file'
+			);
+		}
+
+		if (!baseUrl) {
+			throw new Error(
+				'API_BASE_URL is required.\n\n' +
+					'Action required: Set API_BASE_URL_{ENVIRONMENT} in your .env file'
+			);
+		}
+
 		this.specUrl = specUrl;
-		this.baseUrl = baseUrl || '';
+		this.baseUrl = baseUrl;
 
 		this.apiClient = axios.create({
 			timeout: OPENAPI_CONFIG.timeout,
@@ -129,25 +143,10 @@ export class OpenApiService {
 	}
 
 	//-- Get the base URL for API calls
+	//-- This URL is used exclusively for making API calls
+	//-- The spec URL is only used for fetching the OpenAPI specification
 	getBaseUrl(): string {
-		if (this.baseUrl) {
-			return this.baseUrl;
-		}
-
-		//-- Try to extract from spec
-		if (this.spec) {
-			if ('servers' in this.spec && this.spec.servers && this.spec.servers.length > 0) {
-				return this.spec.servers[0].url;
-			}
-		}
-
-		throw new Error(
-			'API_BASE_URL not configured and no servers found in OpenAPI spec.\n\n' +
-				'Action required:\n' +
-				'1. Add API_BASE_URL_{ENVIRONMENT} to your .env file\n' +
-				'2. Example: API_BASE_URL_PROD=https://api.example.com\n' +
-				'3. Or ensure your OpenAPI spec includes a "servers" section with a URL'
-		);
+		return this.baseUrl;
 	}
 
 	//-- Extract all operations from the OpenAPI spec

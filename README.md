@@ -57,10 +57,10 @@ Configure via environment variables. When using npx, set these in your MCP clien
 # Define your environments (comma-separated)
 ENVIRONMENTS=prod
 
-# OpenAPI spec URL for each environment
+# OpenAPI spec URL for each environment (used ONLY to fetch the spec)
 API_SPEC_URL_PROD=https://api.example.com/openapi/v1.json
 
-# Optional: Base URL override (defaults to spec's servers[0].url)
+# Base API URL for each environment (used for all API calls)
 API_BASE_URL_PROD=https://api.example.com
 ```
 
@@ -70,9 +70,15 @@ API_BASE_URL_PROD=https://api.example.com
 ENVIRONMENTS=dev,qa,prod
 DEFAULT_ENVIRONMENT=dev
 
+# OpenAPI spec URLs (used to fetch the spec)
 API_SPEC_URL_DEV=https://dev-api.example.com/openapi/v1.json
 API_SPEC_URL_QA=https://qa-api.example.com/openapi/v1.json
 API_SPEC_URL_PROD=https://api.example.com/openapi/v1.json
+
+# Base API URLs (used for API calls)
+API_BASE_URL_DEV=https://dev-api.example.com
+API_BASE_URL_QA=https://qa-api.example.com
+API_BASE_URL_PROD=https://api.example.com
 ```
 
 ### Optional Settings
@@ -143,7 +149,8 @@ Edit your VS Code MCP config file (`mcp.json`):
 			"args": ["agdevx-openapi-mcp-server"],
 			"env": {
 				"ENVIRONMENTS": "prod",
-				"API_SPEC_URL_PROD": "https://api.example.com/openapi/v1.json"
+				"API_SPEC_URL_PROD": "https://api.example.com/openapi/v1.json",
+				"API_BASE_URL_PROD": "https://api.example.com"
 			}
 		}
 	}
@@ -167,7 +174,8 @@ Edit your Claude Desktop config:
 			"args": ["agdevx-openapi-mcp-server"],
 			"env": {
 				"ENVIRONMENTS": "prod",
-				"API_SPEC_URL_PROD": "https://api.example.com/openapi/v1.json"
+				"API_SPEC_URL_PROD": "https://api.example.com/openapi/v1.json",
+				"API_BASE_URL_PROD": "https://api.example.com"
 			}
 		}
 	}
@@ -196,7 +204,8 @@ Add to config file:
 			"args": ["agdevx-openapi-mcp-server"],
 			"env": {
 				"ENVIRONMENTS": "prod",
-				"API_SPEC_URL_PROD": "https://api.example.com/openapi/v1.json"
+				"API_SPEC_URL_PROD": "https://api.example.com/openapi/v1.json",
+				"API_BASE_URL_PROD": "https://api.example.com"
 			}
 		}
 	}

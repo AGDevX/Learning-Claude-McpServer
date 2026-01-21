@@ -21,6 +21,11 @@ export class EnvironmentManager {
 				continue;
 			}
 
+			if (!config.baseUrl) {
+				logger.warn(`Environment ${env} is missing API_BASE_URL configuration, skipping...`);
+				continue;
+			}
+
 			const service = new OpenApiService(config.specUrl, config.baseUrl);
 			this.services.set(env, service);
 		}
@@ -31,7 +36,8 @@ export class EnvironmentManager {
 					'Action required:\n' +
 					'1. Set ENVIRONMENTS in your .env file (e.g., ENVIRONMENTS=prod)\n' +
 					'2. Set API_SPEC_URL for each environment (e.g., API_SPEC_URL_PROD=https://api.example.com/openapi/v1.json)\n' +
-					'3. Restart the MCP server\n\n' +
+					'3. Set API_BASE_URL for each environment (e.g., API_BASE_URL_PROD=https://api.example.com)\n' +
+					'4. Restart the MCP server\n\n' +
 					'See .env.example for configuration examples.'
 			);
 		}

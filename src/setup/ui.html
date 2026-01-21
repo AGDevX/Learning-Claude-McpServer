@@ -97,8 +97,8 @@
 							<option value="1" selected>1 (Simple setup)</option>
 							<option value="2">2 (e.g., dev, prod)</option>
 							<option value="3">3 (e.g., dev, qa, prod)</option>
-							<option value="4">4</option>
-							<option value="5">5</option>
+							<option value="4">4 (e.g., dev, qa, ua, prod)</option>
+							<option value="5">5 (e.g., dev, qa, ua, staging, prod)</option>
 						</select>
 						<p class="text-sm text-gray-500 mt-1">How many different environments do you need? (e.g., development, production)</p>
 					</div>
@@ -120,7 +120,7 @@
 								<div>
 									<label class="block text-gray-700 text-sm font-medium mb-1">Verbose Logging</label>
 									<select id="mcp-verbose" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-										<option value="">Default (false)</option>
+										<option value="">Default (Disabled)</option>
 										<option value="true">Enabled</option>
 										<option value="false">Disabled</option>
 									</select>
@@ -141,7 +141,7 @@
 								<div>
 									<label class="block text-gray-700 text-sm font-medium mb-1">Rate Limiting</label>
 									<select id="rate-limit-enabled" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-										<option value="">Default (enabled)</option>
+										<option value="">Default (Enabled)</option>
 										<option value="true">Enabled</option>
 										<option value="false">Disabled</option>
 									</select>
@@ -177,7 +177,7 @@
 										type="number"
 										id="spec-refresh-interval"
 										class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-										placeholder="0 (disabled)"
+										placeholder="0 (Disabled)"
 										min="0"
 										max="86400000"
 									/>
@@ -187,7 +187,7 @@
 								<div>
 									<label class="block text-gray-700 text-sm font-medium mb-1">TLS Certificate Verification</label>
 									<select id="tls-reject-unauthorized" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-										<option value="">Default (Enabled - Secure)</option>
+										<option value="">Enabled (Default - Secure)</option>
 										<option value="0">Disabled (For dev/testing only)</option>
 									</select>
 									<p class="text-xs text-gray-500 mt-1">⚠️ Only disable for development with self-signed certificates</p>
@@ -451,7 +451,7 @@
 				container.innerHTML = '';
 
 				for (let i = 0; i < envCount; i++) {
-					const env = environments[i] || { name: i === 0 ? 'prod' : '', specUrl: '', baseUrl: '' };
+					const env = environments[i] || { name: '', specUrl: '', baseUrl: '' };
 
 					const envDiv = document.createElement('div');
 					envDiv.className = 'mb-6 p-4 border border-gray-200 rounded-lg';
@@ -460,18 +460,19 @@
                     <div class="mb-3">
                         <label class="block text-gray-700 font-medium mb-2">Environment Name</label>
                         <input type="text" id="env-name-${i}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               placeholder="prod, dev, qa..." value="${env.name}">
+                               placeholder="dev, qa, prod..." value="${env.name}">
                     </div>
                     <div class="mb-3">
                         <label class="block text-gray-700 font-medium mb-2">OpenAPI Spec URL</label>
                         <input type="url" id="env-spec-url-${i}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               placeholder="https://api.example.com/openapi/v1.json" value="${env.specUrl}">
+                               placeholder="https://api.example.com/openapi/v1.json or https://api.example.com/swagger/v1/swagger.json" value="${env.specUrl}">
+                        <p class="text-sm text-gray-500 mt-1">The OpenAPI spec will be retrieved from this URL</p>
                     </div>
                     <div class="mb-3">
-                        <label class="block text-gray-700 font-medium mb-2">Base URL (Optional)</label>
+                        <label class="block text-gray-700 font-medium mb-2">Base URL</label>
                         <input type="url" id="env-base-url-${i}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               placeholder="https://api.example.com" value="${env.baseUrl || ''}">
-                        <p class="text-sm text-gray-500 mt-1">Override the base URL from the spec (optional)</p>
+                               placeholder="https://api.example.com" value="${env.baseUrl}">
+                        <p class="text-sm text-gray-500 mt-1">Calls to the API will use this URL</p>
                     </div>
                 `;
 					container.appendChild(envDiv);
@@ -642,8 +643,8 @@
 				// Summary
 				let summary = `
                 <p><strong>Server Name:</strong> ${serverName}</p>
-                <p><strong>Default Environment:</strong> ${defaultEnvironment}</p>
                 <p><strong>Environments:</strong> ${environments.map((e) => e.name).join(', ')}</p>
+                <p><strong>Default Environment:</strong> ${defaultEnvironment}</p>
                 <p><strong>Target Clients:</strong> ${selectedClients.map((c) => clientNames[c]).join(', ')}</p>
             `;
 
